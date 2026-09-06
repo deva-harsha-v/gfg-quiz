@@ -28,7 +28,10 @@ import {
   ChevronUp,
   ChevronDown,
   Sparkles,
-  Layers
+  Layers,
+  KeyRound,
+  Copy,
+  Check
 } from 'lucide-react';
 
 const RoundsPage = () => {
@@ -37,6 +40,16 @@ const RoundsPage = () => {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const handleCopyCode = (code, id) => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => {
+      setCopiedId((prev) => (prev === id ? null : prev));
+    }, 2000);
+  };
   
   const [activeCategory, setActiveCategory] = useState('Logical Reasoning');
   const [isDiplomaOpen, setIsDiplomaOpen] = useState(true);
@@ -235,6 +248,37 @@ const RoundsPage = () => {
                           {round.description}
                         </p>
                       )}
+
+                      {/* EXAM CODE DISPLAY */}
+                      <div className="pt-1">
+                        <div className="inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-cyan-500/30 text-xs">
+                          <KeyRound className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">EXAM CODE:</span>
+                          <span className="font-mono font-black text-cyan-400 tracking-wider text-sm">
+                            {round.accessCode || 'No exam code assigned'}
+                          </span>
+                          {round.accessCode && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopyCode(round.accessCode, round.id)}
+                              className="ml-2 inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold transition-all"
+                              title="Copy Exam Code"
+                            >
+                              {copiedId === round.id ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span className="text-emerald-400">Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>Copy</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
                       <div className="flex flex-wrap items-center gap-6 text-xs text-slate-400 font-mono pt-1">
                         <span className="flex items-center space-x-1.5">

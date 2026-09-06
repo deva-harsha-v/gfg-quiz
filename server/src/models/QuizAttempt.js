@@ -63,9 +63,40 @@ const QuizAttempt = sequelize.define(
       allowNull: false,
       defaultValue: 0
     },
+    correctCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    incorrectCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    unansweredCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    percentage: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      defaultValue: 0.0
+    },
+    timeTaken: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      comment: 'Duration in seconds taken to submit or complete exam'
+    },
     terminationReason: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    examEventKey: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Event identification key (CATEGORY::COURSE::YEAR) for event-scoped one-attempt constraint'
     }
   },
   {
@@ -76,6 +107,15 @@ const QuizAttempt = sequelize.define(
         unique: true,
         fields: ['participantId', 'roundId'],
         name: 'unique_participant_round_attempt'
+      },
+      {
+        unique: true,
+        fields: ['participantId', 'examEventKey'],
+        name: 'unique_participant_event_attempt'
+      },
+      {
+        fields: ['roundId', 'status', 'score', 'timeTaken'],
+        name: 'idx_round_status_score_time'
       }
     ]
   }

@@ -9,7 +9,8 @@ const {
   activateRound,
   pauseRound,
   resumeRound,
-  completeRound
+  completeRound,
+  getRoundResults
 } = require('../controllers/quizRoundController');
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleware');
 
@@ -19,6 +20,7 @@ router.use(authorizeRoles('ADMIN'));
 
 router.get('/', getRounds);
 router.get('/:id', getRoundById);
+router.get('/:id/results', getRoundResults);
 router.post('/', createRound);
 router.put('/:id', updateRound);
 router.delete('/:id', deleteRound);

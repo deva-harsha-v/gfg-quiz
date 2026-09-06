@@ -70,8 +70,20 @@ const emitTerminationEvent = (attemptId, terminationData) => {
   }
 };
 
+const emitSubmissionEvent = (submissionData) => {
+  if (ioInstance) {
+    ioInstance.emit('exam:submitted', {
+      event: 'exam:submitted',
+      timestamp: new Date().toISOString(),
+      ...submissionData
+    });
+    console.log(`[Socket.IO] Emitted event "exam:submitted" for attempt ${submissionData?.attemptId}`);
+  }
+};
+
 module.exports = {
   initializeSockets,
   emitRoundEvent,
-  emitTerminationEvent
+  emitTerminationEvent,
+  emitSubmissionEvent
 };

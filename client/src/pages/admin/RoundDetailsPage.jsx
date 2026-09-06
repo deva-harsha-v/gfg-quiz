@@ -8,7 +8,8 @@ import {
   resumeRound,
   completeRound,
   deleteRound,
-  fetchQuestionsForRound
+  fetchQuestionsForRound,
+  fetchRoundResults
 } from '../../services/api';
 import {
   Trophy,
@@ -25,7 +26,12 @@ import {
   AlertCircle,
   Loader2,
   Calendar,
-  ListOrdered
+  ListOrdered,
+  KeyRound,
+  Copy,
+  Check,
+  Medal,
+  Users
 } from 'lucide-react';
 
 const RoundDetailsPage = () => {
@@ -34,10 +40,13 @@ const RoundDetailsPage = () => {
 
   const [round, setRound] = useState(null);
   const [questionStats, setQuestionStats] = useState({ total: 0, active: 0 });
+  const [resultsList, setResultsList] = useState([]);
+  const [loadingResults, setLoadingResults] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   // Edit Modal State
   const [isEditing, setIsEditing] = useState(false);
@@ -70,10 +79,17 @@ const RoundDetailsPage = () => {
           active: qData.activeQuestions || 0
         });
       }
+
+      setLoadingResults(true);
+      const resData = await fetchRoundResults(id);
+      if (resData?.success && Array.isArray(resData.results)) {
+        setResultsList(resData.results);
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch round details.');
     } finally {
       setLoading(false);
+      setLoadingResults(false);
     }
   };
 
@@ -118,6 +134,14 @@ const RoundDetailsPage = () => {
       setError(err.response?.data?.message || err.message || 'Failed to update round.');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (round?.accessCode) {
+      navigator.clipboard.writeText(round.accessCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -274,6 +298,42 @@ const RoundDetailsPage = () => {
             </div>
           </div>
 
+          {/* Exam Access Code Banner */}
+          {round.accessCode && (
+            <div className="p-5 bg-gradient-to-r from-cyan-950/40 to-indigo-950/40 border border-cyan-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-xl">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                    Unique Exam Access Code ({round.category} • SET {round.setNumber || round.roundNumber})
+                  </span>
+                  <span className="text-lg font-mono font-extrabold text-cyan-400 tracking-wider">
+                    {round.accessCode}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCopyCode}
+                className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-cyan-500 text-slate-200 text-xs font-bold transition-all flex items-center space-x-2 w-fit"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 text-cyan-400" />
+                    <span>Copy Access Code</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Timestamps */}
           <div className="pt-4 border-t border-slate-800/80 text-xs text-slate-500 font-mono space-y-1">
             <p>Start Time: {round.startTime ? new Date(round.startTime).toLocaleString() : 'Not started'}</p>
@@ -282,7 +342,7 @@ const RoundDetailsPage = () => {
         </div>
 
         {/* State Action Controls Card */}
-        <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 mb-8">
           <h3 className="text-base font-bold text-slate-200 border-b border-slate-800 pb-3">
             Round Lifecycle Controls
           </h3>
@@ -332,6 +392,86 @@ const RoundDetailsPage = () => {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Admin Results Leaderboard Card */}
+        <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/30">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-100">
+                  Automated Competition Set Leaderboard
+                </h3>
+                <p className="text-slate-400 text-xs">
+                  Sorted by Score (DESC), Time Taken (ASC)
+                </p>
+              </div>
+            </div>
+            <span className="px-3 py-1 bg-slate-900 border border-slate-800 text-xs font-mono text-cyan-400 font-bold rounded-lg">
+              {resultsList.length} Submissions
+            </span>
+          </div>
+
+          {loadingResults ? (
+            <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center space-x-2">
+              <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
+              <span>Loading set results...</span>
+            </div>
+          ) : resultsList.length === 0 ? (
+            <div className="py-8 text-center text-slate-500 text-xs">
+              No completed student submissions recorded for this quiz set yet.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider font-bold bg-slate-900/60">
+                    <th className="py-3 px-3">Rank</th>
+                    <th className="py-3 px-3">Student Name</th>
+                    <th className="py-3 px-3">Roll No</th>
+                    <th className="py-3 px-3">Dept / Sec</th>
+                    <th className="py-3 px-3">Year</th>
+                    <th className="py-3 px-3">Set</th>
+                    <th className="py-3 px-3 text-right">Marks</th>
+                    <th className="py-3 px-3 text-right">Total</th>
+                    <th className="py-3 px-3 text-right">%</th>
+                    <th className="py-3 px-3 text-right">Time Taken</th>
+                    <th className="py-3 px-3">Submitted At</th>
+                    <th className="py-3 px-3 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-mono">
+                  {resultsList.map((resItem) => (
+                    <tr key={resItem.id} className="hover:bg-slate-900/40 transition-colors">
+                      <td className="py-3 px-3 font-extrabold text-amber-400">
+                        {resItem.rank === 1 ? '🥇 #1' : resItem.rank === 2 ? '🥈 #2' : resItem.rank === 3 ? '🥉 #3' : `#${resItem.rank}`}
+                      </td>
+                      <td className="py-3 px-3 font-sans font-bold text-slate-100">{resItem.studentName}</td>
+                      <td className="py-3 px-3 text-cyan-400 font-bold">{resItem.rollNumber}</td>
+                      <td className="py-3 px-3 font-sans text-slate-300">{resItem.department} ({resItem.section})</td>
+                      <td className="py-3 px-3 font-sans text-slate-400">{resItem.year}</td>
+                      <td className="py-3 px-3 font-sans font-bold text-purple-400">{resItem.setNumber}</td>
+                      <td className="py-3 px-3 text-right font-extrabold text-emerald-400">{resItem.score}</td>
+                      <td className="py-3 px-3 text-right text-slate-400">{resItem.totalMarks}</td>
+                      <td className="py-3 px-3 text-right text-cyan-300">{resItem.percentage}%</td>
+                      <td className="py-3 px-3 text-right text-slate-300">{resItem.timeTakenFormatted}</td>
+                      <td className="py-3 px-3 text-slate-400 text-[11px]">
+                        {resItem.submittedAt ? new Date(resItem.submittedAt).toLocaleTimeString() : '—'}
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                          {resItem.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 

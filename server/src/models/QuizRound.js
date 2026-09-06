@@ -77,6 +77,11 @@ const QuizRound = sequelize.define(
     endTime: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    accessCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
     }
   },
   {

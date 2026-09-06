@@ -43,8 +43,15 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const handleLogin = async (rollNumber, password) => {
-    const data = await apiLogin({ rollNumber, password });
+  const handleLogin = async (rollNumberOrToken, passwordOrParticipant) => {
+    if (typeof rollNumberOrToken === 'string' && typeof passwordOrParticipant === 'object' && passwordOrParticipant !== null) {
+      localStorage.setItem('token', rollNumberOrToken);
+      setToken(rollNumberOrToken);
+      setParticipant(passwordOrParticipant);
+      setIsAuthenticated(true);
+      return { success: true, token: rollNumberOrToken, participant: passwordOrParticipant };
+    }
+    const data = await apiLogin({ rollNumber: rollNumberOrToken, password: passwordOrParticipant });
     if (data?.success && data?.token) {
       localStorage.setItem('token', data.token);
       setToken(data.token);

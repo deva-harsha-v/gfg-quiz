@@ -107,6 +107,12 @@ const createRound = async (req, res, next) => {
       });
     }
 
+    const { generateUnique4DigitAccessCode } = require('../utils/codeGenerator');
+    let accessCode = req.body.accessCode && /^\d{4}$/.test(String(req.body.accessCode).trim()) ? String(req.body.accessCode).trim() : null;
+    if (!accessCode) {
+      accessCode = await generateUnique4DigitAccessCode();
+    }
+
     const round = await QuizRound.create({
       title: title.trim(),
       category: reqCategory,
@@ -117,6 +123,7 @@ const createRound = async (req, res, next) => {
       description: description ? description.trim() : null,
       duration: parsedDuration,
       totalMarks: parsedMarks,
+      accessCode,
       status: 'DRAFT'
     });
 
@@ -396,6 +403,100 @@ const completeRound = async (req, res, next) => {
   }
 };
 
+// GET /api/rounds/:id/results — Get admin results leaderboard for a quiz round
+const getRoundResults = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const QuizAttempt = require('../models/QuizAttempt');
+    const round = await QuizRound.findByPk(id);
+
+    if (!round) {
+      return res.status(404).json({ success: false, message: 'Quiz round not found.' });
+    }
+
+    const attempts = await QuizAttempt.findAll({
+      where: {
+        roundId: id,
+        status: { [Op.in]: ['SUBMITTED', 'EXPIRED', 'TERMINATED'] }
+      },
+      include: [
+        {
+          model: Participant,
+          as: 'participant',
+          attributes: ['name', 'rollNumber', 'department', 'section']
+        }
+      ],
+      order: [
+        ['score', 'DESC'],
+        ['timeTaken', 'ASC'],
+        ['submittedAt', 'ASC']
+      ]
+    });
+
+    let currentRank = 0;
+    let prevScore = null;
+    let prevTime = null;
+
+    const results = attempts.map((att, idx) => {
+      const scoreNum = parseFloat(att.score || 0);
+      const timeNum = parseInt(att.timeTaken || 0, 10);
+
+      if (prevScore === null || prevScore !== scoreNum || prevTime !== timeNum) {
+        currentRank = idx + 1;
+      }
+      prevScore = scoreNum;
+      prevTime = timeNum;
+
+      const totalM = parseFloat(att.totalMarks || 100);
+      const pct = att.percentage ? parseFloat(att.percentage) : (totalM > 0 ? Math.round((scoreNum / totalM) * 10000) / 100 : 0);
+
+      const mins = Math.floor(timeNum / 60);
+      const secs = timeNum % 60;
+      const formattedTime = mins === 0 ? `${secs} sec` : `${mins} min ${secs} sec`;
+
+      return {
+        rank: currentRank,
+        id: att.id,
+        studentName: att.participant ? att.participant.name : 'Unknown',
+        rollNumber: att.participant ? att.participant.rollNumber : '—',
+        department: att.participant ? att.participant.department : '—',
+        section: att.participant ? att.participant.section : '—',
+        year: round.year,
+        category: round.category,
+        course: round.course,
+        setNumber: round.setNumber ? `SET ${round.setNumber}` : `SET ${round.roundNumber}`,
+        score: scoreNum,
+        totalMarks: totalM,
+        percentage: pct,
+        correctCount: att.correctCount,
+        incorrectCount: att.incorrectCount,
+        unansweredCount: att.unansweredCount,
+        startedAt: att.startedAt,
+        submittedAt: att.submittedAt,
+        timeTakenSeconds: timeNum,
+        timeTakenFormatted: formattedTime,
+        status: att.status
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      round: {
+        id: round.id,
+        title: round.title,
+        category: round.category,
+        course: round.course,
+        year: round.year,
+        setNumber: round.setNumber
+      },
+      totalParticipants: results.length,
+      results
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getRounds,
   getRoundById,
@@ -405,5 +506,6 @@ module.exports = {
   activateRound,
   pauseRound,
   resumeRound,
-  completeRound
+  completeRound,
+  getRoundResults
 };

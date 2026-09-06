@@ -42,7 +42,7 @@ app.use(
 // 3. API Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 500,
+  max: 10000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -80,7 +80,30 @@ app.use(errorHandler);
 const io = initializeSockets(server, CLIENT_URL);
 
 // 8. Start HTTP Server & Connect Database
+let listenRetries = 0;
+const MAX_LISTEN_RETRIES = 5;
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    listenRetries += 1;
+    if (listenRetries <= MAX_LISTEN_RETRIES) {
+      console.warn(`⚠️ [Server] Port ${PORT} is busy (socket releasing). Retrying bind in 500ms (Attempt ${listenRetries}/${MAX_LISTEN_RETRIES})...`);
+      setTimeout(() => {
+        try { server.close(); } catch (e) {}
+        server.listen(PORT);
+      }, 500);
+    } else {
+      console.error(`❌ [Server Error] Port ${PORT} is permanently in use by another active process.`);
+      process.exit(1);
+    }
+  } else {
+    console.error(`❌ [Server Error]`, err);
+    process.exit(1);
+  }
+});
+
 server.listen(PORT, async () => {
+  listenRetries = 0;
   console.log(`===========================================`);
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`🌐 Allowed Client URL: ${CLIENT_URL}`);
@@ -98,3 +121,21 @@ server.listen(PORT, async () => {
     console.error(`⚠️ Database startup warning: Database sync/seeding issue.`, err.message);
   }
 });
+
+// Graceful process termination & nodemon restart handlers (prevents EADDRINUSE)
+const gracefulShutdown = (signal) => {
+  console.log(`[Server] Received ${signal}. Closing HTTP server gracefully...`);
+  server.close(() => {
+    console.log('[Server] HTTP server closed cleanly.');
+    process.exit(0);
+  });
+};
+
+process.once('SIGUSR2', () => {
+  server.close(() => {
+    process.kill(process.pid, 'SIGUSR2');
+  });
+});
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

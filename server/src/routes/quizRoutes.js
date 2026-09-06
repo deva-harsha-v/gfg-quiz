@@ -8,11 +8,23 @@ const {
   getAttemptQuestions,
   saveAnswer,
   submitQuiz,
-  getQuizResult
+  getQuizResult,
+  verifyAccessCode,
+  publicStartExam,
+  getRankings,
+  getAdminResults
 } = require('../controllers/quizController');
 const { terminateAttemptController } = require('../controllers/securityController');
 
-// All participant quiz routes require authentication and PARTICIPANT role
+// 1. PUBLIC UNAUTHENTICATED ROUTES (For Student Exam Entry & Rankings without pre-registration)
+router.post('/public-start', publicStartExam);
+router.post('/verify-access-code', verifyAccessCode);
+router.get('/rankings', getRankings);
+
+// 2. PROTECTED ADMIN ROUTES
+router.get('/admin/results', authenticate, authorizeRoles('ADMIN'), getAdminResults);
+
+// 3. PROTECTED PARTICIPANT ROUTES (Require authentication token)
 router.use(authenticate, authorizeRoles('PARTICIPANT'));
 
 // List available active quizzes

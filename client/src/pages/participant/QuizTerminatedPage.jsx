@@ -7,7 +7,10 @@ import {
   ArrowLeft,
   Loader2,
   Clock,
-  Award
+  Award,
+  User,
+  Hash,
+  FileText
 } from 'lucide-react';
 
 const QuizTerminatedPage = () => {
@@ -46,7 +49,11 @@ const QuizTerminatedPage = () => {
     );
   }
 
-  const reasonText = result?.terminationReason === 'TAB_SWITCH' ? 'TAB SWITCH' : (result?.terminationReason || 'SECURITY VIOLATION');
+  const studentName = result?.participant?.name || 'Student';
+  const rollNumber = result?.participant?.rollNumber || '—';
+  const examName = result?.round?.title || 'Engineers’ Day Quiz Arena';
+  const setNumber = result?.round?.setNumber ? `SET ${result.round.setNumber}` : '—';
+  const submissionTime = result?.submittedAt ? new Date(result.submittedAt).toLocaleString() : new Date().toLocaleString();
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6">
@@ -62,69 +69,66 @@ const QuizTerminatedPage = () => {
 
             <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-rose-950 border border-rose-500/40 text-rose-400 text-xs font-bold uppercase tracking-wider">
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Exam Security Enforcement</span>
+              <span>Exam Security Violation</span>
             </span>
 
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
-              Quiz Terminated
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100">
+              Exam Automatically Submitted
             </h1>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-md mx-auto">
-              Your quiz has been terminated because you left the active quiz window/tab. You are no longer permitted to continue this attempt.
+            <p className="text-rose-400 text-xs font-semibold leading-relaxed max-w-md mx-auto">
+              Exam automatically submitted because you left the examination window.
             </p>
           </div>
 
-          {/* Recorded Violation Details Card */}
-          <div className="relative z-10 p-5 bg-slate-900/90 border border-slate-800 rounded-2xl text-left space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
-              Security Event Record
+          {/* Recorded Details Card */}
+          <div className="relative z-10 p-5 bg-slate-900/90 border border-slate-800 rounded-2xl text-left space-y-3 text-xs">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2 flex items-center justify-between">
+              <span>Examination Record</span>
+              <span className="text-rose-400 font-mono">AUTO_SUBMITTED_CHEATING</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-2 gap-4 pt-1">
               <div>
-                <span className="text-slate-500 block">Attempt Status</span>
-                <span className="font-bold text-rose-400 font-mono">TERMINATED</span>
+                <span className="text-slate-500 block text-[10px]">Student Name</span>
+                <span className="font-extrabold text-slate-100">{studentName}</span>
               </div>
 
               <div>
-                <span className="text-slate-500 block">Violation Reason</span>
-                <span className="font-bold text-amber-400 font-mono">{reasonText}</span>
+                <span className="text-slate-500 block text-[10px]">Register Number</span>
+                <span className="font-mono font-bold text-cyan-400">{rollNumber}</span>
               </div>
 
-              {result?.score !== undefined && (
-                <div>
-                  <span className="text-slate-500 block">Evaluated Score</span>
-                  <span className="font-bold text-slate-200">
-                    {result.score} / {result.totalMarks}
-                  </span>
-                </div>
-              )}
+              <div>
+                <span className="text-slate-500 block text-[10px]">Exam Name</span>
+                <span className="font-bold text-slate-200">{examName}</span>
+              </div>
 
-              {result?.answeredCount !== undefined && (
-                <div>
-                  <span className="text-slate-500 block">Questions Saved</span>
-                  <span className="font-bold text-slate-200">
-                    {result.answeredCount} / {result.totalQuestions}
-                  </span>
-                </div>
-              )}
+              <div>
+                <span className="text-slate-500 block text-[10px]">Set Number</span>
+                <span className="font-bold text-cyan-400">{setNumber}</span>
+              </div>
+
+              <div>
+                <span className="text-slate-500 block text-[10px]">Status</span>
+                <span className="font-extrabold text-rose-400 font-mono">Auto Submitted</span>
+              </div>
+
+              <div>
+                <span className="text-slate-500 block text-[10px]">Submission Time</span>
+                <span className="font-mono text-slate-300 text-[11px]">{submissionTime}</span>
+              </div>
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="relative z-10 pt-2">
-            <button
-              onClick={() => navigate('/participant/dashboard')}
-              className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold inline-flex items-center justify-center space-x-2 transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Dashboard</span>
-            </button>
-          </div>
+          {/* Warning Message */}
+          <p className="text-slate-500 text-[11px] relative z-10">
+            Restarting or continuing this examination is not allowed. Your answers up to termination have been logged.
+          </p>
         </div>
       </main>
 
       <footer className="py-4 text-center text-xs text-slate-500">
-        Engineers’ Day Quiz Arena — Automated Exam Security Active.
+        Engineers’ Day Quiz Arena — Automated Security Active.
       </footer>
     </div>
   );

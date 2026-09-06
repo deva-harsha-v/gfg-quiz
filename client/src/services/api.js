@@ -153,8 +153,26 @@ export const getAvailableQuizzes = async () => {
   return response.data;
 };
 
-export const startQuiz = async (roundId) => {
-  const response = await apiClient.post(`/quiz/rounds/${roundId}/start`);
+export const publicStartExam = async (data) => {
+  const response = await apiClient.post('/quiz/public-start', data);
+  return response.data;
+};
+
+export const verifyAccessCode = async (roundIdOrCode, accessCodeParam) => {
+  let payload = {};
+  if (typeof roundIdOrCode === 'object' && roundIdOrCode !== null) {
+    payload = roundIdOrCode;
+  } else if (accessCodeParam !== undefined) {
+    payload = { roundId: roundIdOrCode, accessCode: accessCodeParam };
+  } else {
+    payload = { accessCode: roundIdOrCode };
+  }
+  const response = await apiClient.post('/quiz/verify-access-code', payload);
+  return response.data;
+};
+
+export const startQuiz = async (roundId, accessCode = null) => {
+  const response = await apiClient.post(`/quiz/rounds/${roundId}/start`, { accessCode });
   return response.data;
 };
 
@@ -195,6 +213,16 @@ export const terminateQuizAttempt = async (attemptId, reason = 'TAB_SWITCH', met
 
 export const fetchAdminSecurityEvents = async (params = {}) => {
   const response = await apiClient.get('/admin/security/events', { params });
+  return response.data;
+};
+
+export const fetchRoundResults = async (roundId) => {
+  const response = await apiClient.get(`/rounds/${roundId}/results`);
+  return response.data;
+};
+
+export const fetchAdminResults = async (params = {}) => {
+  const response = await apiClient.get('/quiz/admin/results', { params });
   return response.data;
 };
 

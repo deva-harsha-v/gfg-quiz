@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { EXAM_SECURITY } from '../config/examSecurity';
 import { getSocket } from '../services/socket';
 
 /**
- * Custom React Hook for monitoring live exam security and tab visibility transitions.
+ * Custom React Hook for monitoring live exam security, tab visibility, full-screen exits, and window blur events.
  * @param {Object} options
  * @param {string} options.attemptId - Current attempt UUID
  * @param {string} options.status - Current attempt status ('IN_PROGRESS', 'SUBMITTED', etc.)
@@ -28,7 +27,7 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
         if (data && data.attemptId === attemptId && !terminationTriggeredRef.current) {
           terminationTriggeredRef.current = true;
           if (onTerminate) {
-            onTerminate(data.reason || 'TAB_SWITCH', data);
+            onTerminate(data.reason || 'AUTO_SUBMITTED_CHEATING', data);
           }
         }
       };
@@ -36,31 +35,71 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
       socket.on('quiz:terminated', handleSocketTerminated);
     }
 
-    // 2. Primary Tab Switch / Visibility Change Detector
-    const handleVisibilityChange = () => {
-      if (
-        EXAM_SECURITY.terminateOnTabSwitch &&
-        document.visibilityState === 'hidden' &&
-        !terminationTriggeredRef.current
-      ) {
-        terminationTriggeredRef.current = true;
-        console.warn('[Exam Security]: Tab switch detected (visibilityState = hidden). Triggering termination.');
-        
-        if (onTerminate) {
-          onTerminate('TAB_SWITCH', {
-            visibilityState: 'hidden',
-            detectionSource: 'visibilitychange',
-            timestamp: new Date().toISOString()
-          });
-        }
+    const triggerTermination = (detectionSource, extraData = {}) => {
+      if (terminationTriggeredRef.current) return;
+      terminationTriggeredRef.current = true;
+
+      console.warn(`[Exam Security Violation]: Triggered via ${detectionSource}`);
+
+      if (onTerminate) {
+        onTerminate('AUTO_SUBMITTED_CHEATING', {
+          detectionSource,
+          timestamp: new Date().toISOString(),
+          ...extraData
+        });
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // 2. Tab Switch / Visibility Change Detector
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        triggerTermination('visibilitychange', { visibilityState: 'hidden' });
+      }
+    };
 
-    // Cleanup event listeners and socket rooms on unmount
+    // 3. Full-Screen Exit Detector
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        triggerTermination('fullscreenchange', { fullScreenActive: false });
+      }
+    };
+
+    // 4. Window Blur / Focus Loss Detector
+    const handleWindowBlur = () => {
+      triggerTermination('window_blur');
+    };
+
+    // 5. Multiple Exam Tab Prevention via BroadcastChannel
+    let broadcastChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        broadcastChannel = new BroadcastChannel(`exam_session_${attemptId}`);
+        broadcastChannel.postMessage({ type: 'NEW_TAB_OPENED', timestamp: Date.now() });
+
+        broadcastChannel.onmessage = (event) => {
+          if (event.data?.type === 'NEW_TAB_OPENED') {
+            triggerTermination('multiple_tabs_detected');
+          }
+        };
+      }
+    } catch (e) {
+      console.warn('[BroadcastChannel Warning]:', e);
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('blur', handleWindowBlur);
+
+    // Cleanup event listeners and sockets on unmount
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('blur', handleWindowBlur);
+      if (broadcastChannel) {
+        try {
+          broadcastChannel.close();
+        } catch (e) {}
+      }
       if (socket) {
         socket.off('quiz:terminated');
         socket.emit('leave:attempt', attemptId);

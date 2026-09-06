@@ -128,7 +128,7 @@ const QuizPage = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [attempt, isTerminating]);
 
-  // Handle Option Selection and Backend Save
+  // Handle Option Selection and Backend Save (Single Click Immediate Execution)
   const handleOptionSelect = async (selectedOption) => {
     if (isTerminating || attempt?.status !== 'IN_PROGRESS') return;
 
@@ -136,19 +136,26 @@ const QuizPage = () => {
     if (!currentQuestion) return;
     const questionId = currentQuestion.id;
 
-    // Update local state immediately
+    // Prevent duplicate rapid calls if already saving the exact same option
+    if (answersMap[questionId] === selectedOption && savingMap[questionId]) return;
+
+    // 1. Immediately update local UI state (Selection + Question Palette + Clear Errors)
     setAnswersMap((prev) => ({
       ...prev,
       [questionId]: selectedOption
     }));
-
     setSavingMap((prev) => ({ ...prev, [questionId]: true }));
     setSaveErrorMap((prev) => ({ ...prev, [questionId]: false }));
 
     try {
+      // 2. Call saveAnswer directly with the selectedOption argument (not stale state)
       const res = await saveAnswer(attemptId, questionId, selectedOption);
-      if (res.success) {
+      if (res && res.success) {
         setSavingMap((prev) => ({ ...prev, [questionId]: false }));
+        setSaveErrorMap((prev) => ({ ...prev, [questionId]: false }));
+      } else {
+        setSavingMap((prev) => ({ ...prev, [questionId]: false }));
+        setSaveErrorMap((prev) => ({ ...prev, [questionId]: true }));
       }
     } catch (err) {
       console.error('[Save Answer Error]:', err);
@@ -427,20 +434,15 @@ const QuizPage = () => {
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-xl font-extrabold text-slate-100">Submit Quiz?</h3>
-              {answeredCount === 0 ? (
-                <p className="text-xs text-rose-400 font-medium">
-                  You have not answered any questions. Are you sure you want to submit?
-                </p>
-              ) : (
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  You have answered <strong className="text-cyan-400">{answeredCount}</strong> of{' '}
-                  <strong className="text-slate-200">{totalQuestions}</strong> questions.
-                  <br />
-                  Once submitted, your answers will be locked and finalized.
-                </p>
-              )}
+            <div className="space-y-2 text-center">
+              <h3 className="text-lg font-extrabold text-slate-100">
+                Are you sure you want to submit your examination?
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                You have answered <strong className="text-cyan-400">{answeredCount}</strong> of{' '}
+                <strong className="text-slate-200">{totalQuestions}</strong> questions.
+                Once submitted, your examination will be locked.
+              </p>
             </div>
 
             {submitError && (
@@ -471,7 +473,7 @@ const QuizPage = () => {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Confirm Submit</span>
+                    <span>Submit Exam</span>
                   </>
                 )}
               </button>

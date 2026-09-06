@@ -59,33 +59,23 @@ const QuizQuestion = ({ question, questionIndex, selectedOption, onOptionSelect,
       </div>
 
       {/* MCQ Options List */}
-      <fieldset className="space-y-3 pt-2">
-        <legend className="sr-only">Select answer option for Question {questionIndex + 1}</legend>
-
+      <div className="space-y-3 pt-2 font-sans" role="radiogroup" aria-label={`Select answer option for Question ${questionIndex + 1}`}>
         {options.map((opt) => {
           const isSelected = selectedOption === opt.key;
 
           return (
-            <label
+            <button
               key={opt.key}
-              htmlFor={`q-${question.id}-opt-${opt.key}`}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
               onClick={() => onOptionSelect(opt.key)}
-              className={`flex items-start space-x-4 p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`w-full flex items-start space-x-4 p-4 rounded-2xl border cursor-pointer text-left transition-all ${
                 isSelected
                   ? 'bg-cyan-950/60 border-cyan-400 shadow-md shadow-cyan-500/10 ring-1 ring-cyan-400/50'
                   : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
               }`}
             >
-              <input
-                type="radio"
-                id={`q-${question.id}-opt-${opt.key}`}
-                name={`question-${question.id}`}
-                value={opt.key}
-                checked={isSelected}
-                onChange={() => onOptionSelect(opt.key)}
-                className="sr-only"
-              />
-
               <div
                 className={`w-7 h-7 rounded-xl border flex items-center justify-center font-bold text-xs shrink-0 transition-all ${
                   isSelected
@@ -101,10 +91,10 @@ const QuizQuestion = ({ question, questionIndex, selectedOption, onOptionSelect,
               }`}>
                 {opt.text}
               </span>
-            </label>
+            </button>
           );
         })}
-      </fieldset>
+      </div>
     </div>
   );
 };

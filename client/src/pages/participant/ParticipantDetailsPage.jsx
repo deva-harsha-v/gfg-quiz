@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getAvailableQuizzes, startQuiz } from '../../services/api';
+import { getAvailableQuizzes } from '../../services/api';
 import {
   Cpu,
   User,
@@ -15,10 +15,7 @@ import {
   ShieldCheck,
   LogOut,
   Brain,
-  Sparkles,
-  CheckCircle2,
-  Clock,
-  Award
+  Sparkles
 } from 'lucide-react';
 
 const ParticipantDetailsPage = () => {
@@ -38,7 +35,6 @@ const ParticipantDetailsPage = () => {
   });
 
   const [validationError, setValidationError] = useState('');
-  const [starting, setStarting] = useState(false);
 
   // Pre-fill participant details from AuthContext when available
   useEffect(() => {
@@ -93,7 +89,7 @@ const ParticipantDetailsPage = () => {
     }
   };
 
-  const handleStart = async (e) => {
+  const handleStart = (e) => {
     e.preventDefault();
     setValidationError('');
 
@@ -108,21 +104,8 @@ const ParticipantDetailsPage = () => {
       return;
     }
 
-    try {
-      setStarting(true);
-      const res = await startQuiz(roundId);
-      if (res?.success && res?.attempt) {
-        navigate(`/participant/quiz/${res.attempt.id}`);
-      } else {
-        setValidationError(res?.message || 'Failed to start quiz attempt.');
-      }
-    } catch (err) {
-      console.error('[Start Quiz Attempt Error]:', err);
-      const msg = err.response?.data?.message || 'Could not start quiz. Please try again.';
-      setValidationError(msg);
-    } finally {
-      setStarting(false);
-    }
+    // Navigate to dedicated access code verification page
+    navigate(`/participant/verify-code/${roundId}`);
   };
 
   const getSetTitle = (quiz) => {

@@ -266,14 +266,21 @@ const examEntryParticipant = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please enter your roll number.' });
     }
 
+    const trimmedRoll = rollNumber.trim();
+    if (!/^[A-Z0-9]+$/.test(trimmedRoll)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Register Number must contain only CAPITAL letters and numbers (no spaces, lowercase letters, or special characters).'
+      });
+    }
+
     if (!department || typeof department !== 'string' || !department.trim()) {
       return res.status(400).json({ success: false, message: 'Please select your department.' });
     }
 
-    const validSections = ['A', 'B', 'C', 'D'];
     const normalizedSection = section && typeof section === 'string' ? section.trim().toUpperCase() : '';
-    if (!normalizedSection || !validSections.includes(normalizedSection)) {
-      return res.status(400).json({ success: false, message: 'Please select your section.' });
+    if (!normalizedSection) {
+      return res.status(400).json({ success: false, message: 'Please enter or select your section.' });
     }
 
     const normalizedRoll = rollNumber.trim().toUpperCase();
