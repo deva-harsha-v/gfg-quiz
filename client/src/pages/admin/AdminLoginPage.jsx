@@ -43,8 +43,10 @@ const AdminLoginPage = () => {
       const res = await apiLoginAdmin({ email, password });
       if (res?.success && res?.token) {
         localStorage.setItem('token', res.token);
-        // Force refresh session in AuthContext
-        window.location.href = '/admin/dashboard';
+        if (res.admin) {
+          login(res.token, res.admin);
+        }
+        navigate('/admin/dashboard', { replace: true });
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Admin authentication failed.';
@@ -126,7 +128,7 @@ const AdminLoginPage = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder="Enter administrator password"
+                  placeholder="AdminPass123! or your admin password"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -141,6 +143,15 @@ const AdminLoginPage = () => {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
+              </div>
+            </div>
+
+            {/* Default Credentials Hint Card */}
+            <div className="p-3 bg-purple-950/40 border border-purple-800/40 rounded-xl text-xs text-purple-300 flex flex-col space-y-1">
+              <span className="font-semibold text-purple-200 uppercase tracking-wider text-[10px]">Default Admin Credentials:</span>
+              <div className="flex justify-between font-mono text-[11px] text-slate-300">
+                <span>Email: <strong className="text-cyan-400 font-semibold">admin@example.com</strong></span>
+                <span>Pass: <strong className="text-cyan-400 font-semibold">AdminPass123!</strong></span>
               </div>
             </div>
 

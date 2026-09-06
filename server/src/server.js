@@ -125,6 +125,7 @@ server.listen(PORT, async () => {
 // Graceful process termination & nodemon restart handlers (prevents EADDRINUSE)
 const gracefulShutdown = (signal) => {
   console.log(`[Server] Received ${signal}. Closing HTTP server gracefully...`);
+  if (server.closeAllConnections) server.closeAllConnections();
   server.close(() => {
     console.log('[Server] HTTP server closed cleanly.');
     process.exit(0);
@@ -132,6 +133,7 @@ const gracefulShutdown = (signal) => {
 };
 
 process.once('SIGUSR2', () => {
+  if (server.closeAllConnections) server.closeAllConnections();
   server.close(() => {
     process.kill(process.pid, 'SIGUSR2');
   });

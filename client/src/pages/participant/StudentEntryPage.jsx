@@ -176,7 +176,7 @@ const StudentEntryPage = () => {
       if (status === 401) {
         setErrorMessage(msg || 'Invalid Exam Code. Please enter a valid 4-digit code.');
       } else if (status === 403) {
-        setErrorMessage(msg || 'Registration not found. Please use the Roll Number used during registration.');
+        setErrorMessage(msg || 'Your account is currently inactive. Please contact the administrator.');
       } else if (status === 409) {
         setErrorMessage(msg || 'An examination has already been attempted using this Roll Number. You cannot retake the exam.');
       } else if (status === 400) {

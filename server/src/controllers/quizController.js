@@ -871,13 +871,13 @@ const getRankings = async (req, res, next) => {
     const attempts = await QuizAttempt.findAll({
       where: {
         roundId: targetRoundId,
-        status: { [Op.in]: ['SUBMITTED', 'EXPIRED', 'TERMINATED'] }
+        status: 'SUBMITTED'
       },
       include: [
         {
           model: Participant,
           as: 'participant',
-          where: { role: 'PARTICIPANT', isOfficial: true },
+          where: { role: 'PARTICIPANT' },
           attributes: ['name', 'rollNumber', 'department', 'section']
         }
       ],
@@ -965,14 +965,13 @@ const getAdminResults = async (req, res, next) => {
     } = req.query;
 
     const participantWhere = {
-      role: 'PARTICIPANT',
-      isOfficial: true
+      role: 'PARTICIPANT'
     };
     if (search && search.trim()) {
-      const searchStr = `%${search.trim().toUpperCase()}%`;
+      const searchStr = `%${search.trim()}%`;
       participantWhere[Op.or] = [
-        sequelize.where(sequelize.fn('UPPER', sequelize.col('participant.name')), { [Op.like]: searchStr }),
-        sequelize.where(sequelize.fn('UPPER', sequelize.col('participant.rollNumber')), { [Op.like]: searchStr })
+        { name: { [Op.like]: searchStr } },
+        { rollNumber: { [Op.like]: searchStr } }
       ];
     }
     if (department && department.trim() && department !== 'ALL') {
@@ -1321,11 +1320,10 @@ const publicStartExam = async (req, res, next) => {
       });
     }
 
-    // 3. OFFICIAL REGISTRATION VERIFICATION (Only officially registered members allowed!)
+    // 3. PARTICIPANT REGISTRATION & PROFILE LOOKUP (Pre-registration NOT required)
     let participant = await Participant.findOne({
       where: {
         role: 'PARTICIPANT',
-        isOfficial: true,
         [Op.and]: [
           sequelize.where(
             sequelize.fn('UPPER', sequelize.fn('TRIM', sequelize.col('rollNumber'))),
@@ -1338,11 +1336,37 @@ const publicStartExam = async (req, res, next) => {
     });
 
     if (!participant) {
-      await t.rollback();
-      return res.status(403).json({
-        success: false,
-        message: 'Your Roll Number is not registered for this quiz.'
-      });
+      participant = await Participant.create({
+        name: trimmedName || `Student ${trimmedRoll}`,
+        rollNumber: trimmedRoll,
+        department: trimmedDept || 'GENERAL',
+        section: trimmedSec || 'A',
+        year: trimmedYear || '1st Year',
+        role: 'PARTICIPANT',
+        isActive: true
+      }, { transaction: t });
+    } else {
+      // Sync student details if updated on entry
+      let detailsUpdated = false;
+      if (trimmedName && participant.name !== trimmedName) {
+        participant.name = trimmedName;
+        detailsUpdated = true;
+      }
+      if (trimmedDept && participant.department !== trimmedDept) {
+        participant.department = trimmedDept;
+        detailsUpdated = true;
+      }
+      if (trimmedSec && participant.section !== trimmedSec) {
+        participant.section = trimmedSec;
+        detailsUpdated = true;
+      }
+      if (trimmedYear && participant.year !== trimmedYear) {
+        participant.year = trimmedYear;
+        detailsUpdated = true;
+      }
+      if (detailsUpdated) {
+        await participant.save({ transaction: t });
+      }
     }
 
     if (!participant.isActive) {

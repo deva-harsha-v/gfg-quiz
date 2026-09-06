@@ -417,7 +417,7 @@ const getRoundResults = async (req, res, next) => {
     const attempts = await QuizAttempt.findAll({
       where: {
         roundId: id,
-        status: { [Op.in]: ['SUBMITTED', 'EXPIRED', 'TERMINATED'] }
+        status: 'SUBMITTED'
       },
       include: [
         {
