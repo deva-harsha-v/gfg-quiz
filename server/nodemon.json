@@ -1,0 +1,17 @@
+{
+  "watch": [
+    "src/",
+    "package.json",
+    ".env"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "scratch/**",
+    "test_*.js",
+    "scratch_*.js",
+    "*_test.js",
+    "*.log",
+    "node_modules/**"
+  ],
+  "delay": 1000
+}
