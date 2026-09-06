@@ -1,0 +1,15 @@
+{
+  "name": "engineers-day-quiz-arena",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Engineers' Day Quiz Arena — Full Stack Quiz Platform Foundation",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
