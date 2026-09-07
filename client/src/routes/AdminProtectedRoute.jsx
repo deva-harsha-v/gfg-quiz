@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 const AdminProtectedRoute = () => {
-  const { participant, isAuthenticated, loading } = useAuth();
+  const { admin, isAdminAuthenticated, participant, loading } = useAuth();
+  const currentAdmin = admin || (participant?.role === 'ADMIN' ? participant : null);
 
   if (loading) {
     return (
@@ -17,11 +18,11 @@ const AdminProtectedRoute = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAdminAuthenticated && !currentAdmin) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  if (participant?.role !== 'ADMIN') {
+  if (currentAdmin?.role !== 'ADMIN') {
     return <Navigate to="/admin/login" state={{ error: 'Access denied. Admin privileges are required.' }} replace />;
   }
 

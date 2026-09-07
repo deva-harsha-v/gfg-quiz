@@ -17,7 +17,7 @@ import {
 const AdminLoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, participant, isAuthenticated } = useAuth();
+  const { loginAdmin, admin, isAdminAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,10 +26,10 @@ const AdminLoginPage = () => {
   const [error, setError] = useState(location.state?.error || null);
 
   useEffect(() => {
-    if (isAuthenticated && participant?.role === 'ADMIN') {
+    if (isAdminAuthenticated || admin?.role === 'ADMIN') {
       navigate('/admin/dashboard', { replace: true });
     }
-  }, [isAuthenticated, participant, navigate]);
+  }, [isAdminAuthenticated, admin, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,10 +48,7 @@ const AdminLoginPage = () => {
       setLoading(true);
       const res = await apiLoginAdmin({ email, password });
       if (res?.success && res?.token) {
-        localStorage.setItem('token', res.token);
-        if (res.admin) {
-          login(res.token, res.admin);
-        }
+        loginAdmin(res.token, res.admin);
         navigate('/admin/dashboard', { replace: true });
       }
     } catch (err) {
@@ -98,7 +95,7 @@ const AdminLoginPage = () => {
             {/* Email / Admin ID */}
             <div>
               <label htmlFor="email" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                Admin Email / Roll Number
+                Admin Email / Username
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -109,7 +106,7 @@ const AdminLoginPage = () => {
                   name="email"
                   type="text"
                   required
-                  placeholder="admin@example.com"
+                  placeholder="Enter Admin Email"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -134,7 +131,7 @@ const AdminLoginPage = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder="AdminPass123! or your admin password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -149,15 +146,6 @@ const AdminLoginPage = () => {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
-
-            {/* Default Credentials Hint Card */}
-            <div className="p-3 bg-purple-950/40 border border-purple-800/40 rounded-xl text-xs text-purple-300 flex flex-col space-y-1">
-              <span className="font-semibold text-purple-200 uppercase tracking-wider text-[10px]">Default Admin Credentials:</span>
-              <div className="flex justify-between font-mono text-[11px] text-slate-300">
-                <span>Email: <strong className="text-cyan-400 font-semibold">admin@example.com</strong></span>
-                <span>Pass: <strong className="text-cyan-400 font-semibold">AdminPass123!</strong></span>
               </div>
             </div>
 

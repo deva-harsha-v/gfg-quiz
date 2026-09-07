@@ -13,7 +13,18 @@ const apiClient = axios.create({
 // Request Interceptor: Attach Authorization Bearer token if available
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const isPathAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+    const isUrlAdmin = config.url?.includes('/admin') || config.url?.includes('/rounds');
+    const adminToken = localStorage.getItem('admin_token');
+    const participantToken = localStorage.getItem('participant_token') || localStorage.getItem('token');
+
+    let token = null;
+    if (isPathAdmin || isUrlAdmin) {
+      token = adminToken || participantToken;
+    } else {
+      token = participantToken || adminToken;
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
