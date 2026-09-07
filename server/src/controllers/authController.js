@@ -165,15 +165,36 @@ const loginAdmin = async (req, res, next) => {
     const queryStr = email.trim().toLowerCase();
 
     // 1. Find user with role ADMIN matching email OR rollNumber
-    let adminUser = await Participant.findOne({
-      where: {
-        role: 'ADMIN',
-        [Op.or]: [
-          { email: queryStr },
-          { rollNumber: email.trim().toUpperCase() }
-        ]
+    let adminUser = null;
+    try {
+      adminUser = await Participant.findOne({
+        where: {
+          role: 'ADMIN',
+          [Op.or]: [
+            { email: queryStr },
+            { rollNumber: email.trim().toUpperCase() }
+          ]
+        }
+      });
+    } catch (dbQueryErr) {
+      console.warn('[Admin Login] Query failed, attempting auto-syncing database tables...', dbQueryErr.message);
+      try {
+        const { sequelize } = require('../config/database');
+        await sequelize.sync({ alter: false });
+        adminUser = await Participant.findOne({
+          where: {
+            role: 'ADMIN',
+            [Op.or]: [
+              { email: queryStr },
+              { rollNumber: email.trim().toUpperCase() }
+            ]
+          }
+        });
+      } catch (syncErr) {
+        console.error('[Admin Login Auto-Sync Error]:', syncErr.message);
+        throw syncErr;
       }
-    });
+    }
 
     // 2. Auto-seed default Admin on demand if not present in database
     if (!adminUser && (queryStr === 'admin@example.com' || email.trim().toUpperCase() === 'ADMIN-001')) {
@@ -242,9 +263,10 @@ const loginAdmin = async (req, res, next) => {
     });
   } catch (error) {
     console.error('[Admin Login Error]:', error);
+    const sqlDetail = error?.parent?.sqlMessage || error?.original?.sqlMessage || error?.message || 'Database connection issue.';
     return res.status(500).json({
       success: false,
-      message: error.message || 'Internal Server Error during admin authentication.'
+      message: `Admin auth failed: ${sqlDetail}`
     });
   }
 };

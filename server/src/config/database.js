@@ -22,8 +22,8 @@ const ensureDatabaseExists = async () => {
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
     await connection.end();
   } catch (error) {
-    console.error('Error creating database:', error.message);
-    throw error;
+    // Hosted MySQL providers (Railway, Aiven, AWS RDS) pre-create the DB and restrict CREATE DATABASE privileges.
+    console.warn('[Database] Notice: Skipping CREATE DATABASE query (normal for managed cloud databases):', error.message);
   }
 };
 
