@@ -69,6 +69,8 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: "Engineers’ Day Quiz Arena Server Active",
+    version: "1.0.0",
+    status: "production_ready",
     healthCheck: "/api/health"
   });
 });
