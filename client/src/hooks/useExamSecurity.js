@@ -6,16 +6,22 @@ import { getSocket } from '../services/socket';
  * @param {Object} options
  * @param {string} options.attemptId - Current attempt UUID
  * @param {string} options.status - Current attempt status ('IN_PROGRESS', 'SUBMITTED', etc.)
+ * @param {boolean} [options.enabled=true] - Whether anti-cheat monitoring is actively enabled
  * @param {Function} options.onTerminate - Callback executed when security violation is triggered
  */
-export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
+export const useExamSecurity = ({ attemptId, status, enabled = true, onTerminate }) => {
   const terminationTriggeredRef = useRef(false);
+  const mountTimeRef = useRef(Date.now());
+  const blurTimeoutRef = useRef(null);
 
   useEffect(() => {
-    // Security tracking only active when attempt is IN_PROGRESS
-    if (!attemptId || status !== 'IN_PROGRESS') {
+    // Security tracking only active when attempt is IN_PROGRESS and enabled is true
+    if (!attemptId || status !== 'IN_PROGRESS' || !enabled) {
       return;
     }
+
+    // Reset mount time reference on enablement
+    mountTimeRef.current = Date.now();
 
     const socket = getSocket();
 
@@ -37,8 +43,15 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
 
     const triggerTermination = (detectionSource, extraData = {}) => {
       if (terminationTriggeredRef.current) return;
-      terminationTriggeredRef.current = true;
 
+      // 5-second initial grace period after entering the exam interface
+      const timeSinceMount = Date.now() - mountTimeRef.current;
+      if (timeSinceMount < 5000) {
+        console.info(`[Exam Security Grace Period]: Ignored violation '${detectionSource}' during initial 5s setup.`);
+        return;
+      }
+
+      terminationTriggeredRef.current = true;
       console.warn(`[Exam Security Violation]: Triggered via ${detectionSource}`);
 
       if (onTerminate) {
@@ -50,7 +63,7 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
       }
     };
 
-    // 2. Tab Switch / Visibility Change Detector
+    // 2. Tab Switch / Visibility Change Detector (Instant Trigger when tab becomes hidden)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         triggerTermination('visibilitychange', { visibilityState: 'hidden' });
@@ -64,9 +77,25 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
       }
     };
 
-    // 4. Window Blur / Focus Loss Detector
+    // 4. Window Blur / Focus Loss Detector with 1.5s Debounce for Transient Popups
     const handleWindowBlur = () => {
-      triggerTermination('window_blur');
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+
+      // Check after 1500ms if focus has not returned or tab is hidden
+      blurTimeoutRef.current = setTimeout(() => {
+        if (document.visibilityState === 'hidden' || !document.hasFocus()) {
+          triggerTermination('window_blur');
+        }
+      }, 1500);
+    };
+
+    const handleWindowFocus = () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+        blurTimeoutRef.current = null;
+      }
     };
 
     // 5. Multiple Exam Tab Prevention via BroadcastChannel
@@ -89,12 +118,17 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
 
     // Cleanup event listeners and sockets on unmount
     return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('focus', handleWindowFocus);
       if (broadcastChannel) {
         try {
           broadcastChannel.close();
@@ -105,7 +139,7 @@ export const useExamSecurity = ({ attemptId, status, onTerminate }) => {
         socket.emit('leave:attempt', attemptId);
       }
     };
-  }, [attemptId, status, onTerminate]);
+  }, [attemptId, status, enabled, onTerminate]);
 };
 
 export default useExamSecurity;

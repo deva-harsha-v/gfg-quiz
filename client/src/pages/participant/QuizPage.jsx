@@ -63,10 +63,11 @@ const QuizPage = () => {
     [attemptId, navigate]
   );
 
-  // Integrate Exam Security Hook for Tab Switch Detection
+  // Integrate Exam Security Hook for Tab Switch Detection (enabled after instructions modal is closed)
   useExamSecurity({
     attemptId,
     status: attempt?.status,
+    enabled: !showInstructionsModal,
     onTerminate: handleSecurityTermination
   });
 
@@ -417,7 +418,12 @@ const QuizPage = () => {
             </div>
 
             <button
-              onClick={() => setShowInstructionsModal(false)}
+              onClick={() => {
+                if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                  document.documentElement.requestFullscreen().catch(() => {});
+                }
+                setShowInstructionsModal(false);
+              }}
               className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-cyan-500/20 transition-all"
             >
               I Understand, Begin Quiz Now

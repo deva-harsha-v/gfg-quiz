@@ -240,10 +240,7 @@ const StudentEntryPage = () => {
             </div>
           )}
 
-          <form name="student-exam-entry" autoComplete="off" onSubmit={handleStartExam} className="space-y-4">
-            {/* Hidden dummy fields to prevent browser password autofill from capturing student inputs */}
-            <input type="text" name="prevent_autofill_user" style={{ display: 'none' }} tabIndex="-1" aria-hidden="true" autoComplete="off" readOnly />
-            <input type="password" name="prevent_autofill_pass" style={{ display: 'none' }} tabIndex="-1" aria-hidden="true" autoComplete="new-password" readOnly />
+          <form name="student-exam-entry" autoComplete="off" onSubmit={handleStartExam} className="space-y-4" data-lpignore="true" data-bwignore="true">
 
             {/* 1. Name */}
             <div>
@@ -259,6 +256,9 @@ const StudentEntryPage = () => {
                   id="studentFullName"
                   name="studentFullName"
                   autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter Full Name"
@@ -281,6 +281,9 @@ const StudentEntryPage = () => {
                   id="studentRollNo"
                   name="studentRollNo"
                   autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
                   value={formData.rollNumber}
                   onChange={handleInputChange}
                   placeholder="Enter Roll Number"
@@ -380,13 +383,18 @@ const StudentEntryPage = () => {
                   <KeyRound className="w-4 h-4" />
                 </div>
                 <input
-                  type={showCode ? 'text' : 'password'}
+                  type="text"
                   id="studentExamCode"
                   name="studentExamCode"
                   inputMode="numeric"
                   pattern="[0-9]{4}"
                   maxLength={4}
-                  autoComplete="new-password"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
+                  data-form-type="other"
+                  style={{ WebkitTextSecurity: showCode ? 'none' : 'disc' }}
                   value={formData.accessCode}
                   onChange={handleInputChange}
                   placeholder="ENTER 4-DIGIT EXAM CODE"
