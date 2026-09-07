@@ -18,7 +18,6 @@ build/
 # Logs & scratch
 logs/
 *.log
-scratch/
 
 # IDE & OS files
 .vscode/
