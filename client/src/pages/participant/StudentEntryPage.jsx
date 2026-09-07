@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { verifyAccessCode, publicStartExam } from '../../services/api';
 import {
@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Loader2,
   Play,
-  LogOut
+  LogOut,
+  ShieldAlert
 } from 'lucide-react';
 
 const DEPARTMENT_OPTIONS = [
@@ -426,8 +427,15 @@ const StudentEntryPage = () => {
       </main>
 
       {/* Minimal Footer */}
-      <footer className="w-full max-w-lg py-4 text-center text-[11px] text-slate-500">
-        Engineers’ Day Quiz Arena — Official Student Examination Portal.
+      <footer className="w-full max-w-lg py-4 flex flex-col items-center justify-center space-y-1.5 text-[11px] text-slate-500">
+        <div>Engineers’ Day Quiz Arena — Official Student Examination Portal.</div>
+        <Link
+          to="/admin"
+          className="inline-flex items-center space-x-1.5 text-slate-400 hover:text-purple-400 font-semibold transition-colors bg-slate-900/60 px-3 py-1 rounded-lg border border-slate-800"
+        >
+          <ShieldAlert className="w-3.5 h-3.5 text-purple-400" />
+          <span>Admin Portal</span>
+        </Link>
       </footer>
     </div>
   );

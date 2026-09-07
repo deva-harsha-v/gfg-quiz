@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { loginAdmin as apiLoginAdmin } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -17,13 +17,19 @@ import {
 const AdminLoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, participant, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(location.state?.error || null);
+
+  useEffect(() => {
+    if (isAuthenticated && participant?.role === 'ADMIN') {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, participant, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
