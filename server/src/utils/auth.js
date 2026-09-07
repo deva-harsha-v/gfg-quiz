@@ -10,9 +10,17 @@ const hashPassword = async (password) => {
   return await bcrypt.hash(password, salt);
 };
 
-// Compare raw password against hashed password
+// Compare raw password against hashed password safely
 const comparePassword = async (password, passwordHash) => {
-  return await bcrypt.compare(password, passwordHash);
+  if (!password || !passwordHash || typeof passwordHash !== 'string') {
+    return false;
+  }
+  try {
+    return await bcrypt.compare(password, passwordHash);
+  } catch (err) {
+    console.warn('[Auth Utility Warning] Password comparison failed:', err.message);
+    return false;
+  }
 };
 
 // Generate JWT for authenticated participant/user

@@ -164,8 +164,8 @@ const loginAdmin = async (req, res, next) => {
 
     const queryStr = email.trim().toLowerCase();
 
-    // Find user with role ADMIN matching email OR rollNumber
-    const adminUser = await Participant.findOne({
+    // 1. Find user with role ADMIN matching email OR rollNumber
+    let adminUser = await Participant.findOne({
       where: {
         role: 'ADMIN',
         [Op.or]: [
@@ -174,6 +174,16 @@ const loginAdmin = async (req, res, next) => {
         ]
       }
     });
+
+    // 2. Auto-seed default Admin on demand if not present in database
+    if (!adminUser && (queryStr === 'admin@example.com' || email.trim().toUpperCase() === 'ADMIN-001')) {
+      try {
+        const seedAdmin = require('../seeders/createAdmin');
+        adminUser = await seedAdmin();
+      } catch (seedErr) {
+        console.error('[Auto Seed Admin Error]:', seedErr.message);
+      }
+    }
 
     if (!adminUser) {
       return res.status(401).json({
@@ -189,6 +199,13 @@ const loginAdmin = async (req, res, next) => {
       });
     }
 
+    // 3. Ensure passwordHash exists on admin record
+    if (!adminUser.passwordHash) {
+      adminUser.passwordHash = await hashPassword('AdminPass123!');
+      await adminUser.save();
+    }
+
+    // 4. Verify password
     let isPasswordValid = await comparePassword(password, adminUser.passwordHash);
 
     if (!isPasswordValid) {
@@ -224,7 +241,11 @@ const loginAdmin = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('[Admin Login Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Internal Server Error during admin authentication.'
+    });
   }
 };
 
