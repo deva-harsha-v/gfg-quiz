@@ -23,6 +23,16 @@ const getRounds = async (req, res, next) => {
       });
     }
 
+    // Auto-assign 4-digit access codes if any rounds are missing code
+    const missingCodeRounds = rounds.filter((r) => !r.accessCode);
+    if (missingCodeRounds.length > 0) {
+      const { generateUnique4DigitAccessCode } = require('../utils/codeGenerator');
+      for (const r of missingCodeRounds) {
+        r.accessCode = await generateUnique4DigitAccessCode();
+        await r.save();
+      }
+    }
+
     const totalParticipants = await Participant.count({ where: { role: 'PARTICIPANT' } });
     const totalRounds = rounds.length;
     const activeRound = rounds.find((r) => r.status === 'ACTIVE') || null;

@@ -1,4 +1,5 @@
 const QuizRound = require('../models/QuizRound');
+const { generateUnique4DigitAccessCode } = require('../utils/codeGenerator');
 
 const allRoundsDefinition = [
   // 1. Logical Reasoning - 1st Year Diploma (Rounds 1 - 5)
@@ -66,17 +67,21 @@ const createAllRounds = async () => {
         r = await QuizRound.findOne({ where: { category: def.category, course: def.course, year: def.year, setNumber: def.setNumber } });
       }
       if (!r) {
-        await QuizRound.create(def);
+        const accessCode = await generateUnique4DigitAccessCode();
+        await QuizRound.create({ ...def, accessCode });
       } else {
         r.category = def.category;
         r.course = def.course;
         r.year = def.year;
         r.setNumber = def.setNumber;
         r.status = 'ACTIVE';
+        if (!r.accessCode) {
+          r.accessCode = await generateUnique4DigitAccessCode();
+        }
         await r.save();
       }
     }
-    console.log('[All Rounds Seeder] Verified all 40 QuizRound records exist in database.');
+    console.log('[All Rounds Seeder] Verified all 40 QuizRound records exist in database with 4-digit access codes.');
   } catch (err) {
     console.error('[All Rounds Seeder Error]:', err.message);
   }
