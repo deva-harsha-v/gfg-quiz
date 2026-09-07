@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const QuizRound = require('../models/QuizRound');
+const Question = require('../models/Question');
 const Participant = require('../models/Participant');
 const { sequelize } = require('../config/database');
 const { emitRoundEvent } = require('../sockets');
@@ -12,8 +13,10 @@ const getRounds = async (req, res, next) => {
       order: [['course', 'ASC'], ['setNumber', 'ASC'], ['roundNumber', 'ASC']]
     });
 
-    if (rounds.length === 0) {
-      console.log('[getRounds] No rounds found in database. Auto-importing default dataset from scratch...');
+    const totalQuestionsInDB = await Question.count();
+
+    if (rounds.length < 40 || totalQuestionsInDB < 100) {
+      console.log(`[getRounds] Question datasets incomplete (Rounds: ${rounds.length}, Questions: ${totalQuestionsInDB}). Auto-importing full 1080 questions dataset...`);
       await seedAllQuizRounds(true);
       rounds = await QuizRound.findAll({
         order: [['course', 'ASC'], ['setNumber', 'ASC'], ['roundNumber', 'ASC']]
