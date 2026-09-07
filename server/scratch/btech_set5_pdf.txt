@@ -1,0 +1,68 @@
+Set 6(Btech 1st year) 
+1. Complete the composite alternating group pairs: B-4, D-16, F-36, H-64, ? 
+(A) J-100 (B) I-81 (C) K-121 (D) J-121 
+2. Complete the conceptual logic layout: Viscosity : Fluids :: Friction : ? 
+(A) Solids (B) Gases (C) Plasma (D) Vacuum 
+3. Find the correct mirror image of the cloud terminal string: AWS_2026_S3 
+(A) 3S_6202_SWA (B) EƧ_∂S0S_ƧW∀ (C) ƐƧ_∂S0S_ƧW∀ (D) ƐƧ_6202_ƧW∀ 
+4. Complete the logical numeric puzzle sequence: 6, 13, 28, 59, 122, ? 
+(A) 249 (B) 247 (C) 251 (D) 255 
+5. Complete the structural engineering pattern link: Truss : Bridge :: Chassis : ? 
+(A) Automobile (B) Building (C) Airplane (D) Train 
+6. Find the correct water image of the cloud terminal string: AWS_2026_S3 
+(A) ∀MƧ_2026_S3 (B) ∀WƧ_5026_ƧƐ (C) ∀WƧ_2026_S3 (D) ∀MƧ_5026_S3 
+7. Complete the multi-variable progressional group: A1Z, E4X, I9V, M16T, ? 
+(A) Q25R (B) P25R (C) Q25S (D) R25Q 
+8. Find the correct mirror image of the mixed hexadecimal string: 0x7F4A_e 
+(A) e_A4F7x0 (B) ɘ_A4𐌞7x0 (C) ɘ_A𐌲𐌞7x0 (D) ɘ_𐌡4𐌞7x0 
+9. Complete the mathematical series sequence: 2, 12, 36, 80, 150, ? 
+(A) 252 (B) 248 (C) 260 (D) 274 
+10. Find the correct water image of the statistical equation string: Sigma_X^2 
+(A) Ƨiƃɯɐ_X^2 (B) Ƨigɯɐ_X^5 (C) Ƨiƃɯɐ_X^5 (D) Siƃɯɐ_X^2 
+11. Find the correct mirror image of the server deployment tag: PROD_v1.0.4 
+(A) 4.0.1v_DORP (B) A.0.1v_𐌐OЯᗡ (C) 4.0.1v_𐌐ЯOᗡ (D) A.0.1v_𐌐ЯOᗡ 
+12. Complete the sequence based on prime-cube differences: \(2^3-2, 3^3-3, 5^3-5, 7^3-7, ?\) 
+(A) 990 (B) 1320 (C) 1720 (D) 2190 
+13. If a laboratory clock displays exactly 10:10, what is the measure of the smaller acute internal 
+angle between both hand lines? 
+(A) 115° (B) 110° (C) 120° (D) 105° 
+14. Complete the geometric factor sequence: 3, 4, 12, 45, 196, ? 
+(A) 1005 (B) 985 (C) 1025 (D) 1050 
+15. Find the correct water image of the token sequence: TOKEN_#9 
+(A) ꓕOKEИ_#6 (B) 𐌕OKEИ_#6 (C) ꓕOKEИ_#9 (D) TOKEИ_#6 
+16. At what precise minute interval past 9 o'clock do the hands of a clock lie flat along a single 
+straight line pointing in opposite directions? 
+(A) 16-4/11 min (B) 15 min (C) 16-5/11 min (D) 17-3/11 min 
+17. Complete the recursive sequence: 1, 5, 14, 30, 55, 91, ? 
+(A) 140 (B) 135 (C) 144 (D) 150 
+18. If the term "FORCE" resolves to 47 under prime indexing sum laws, what value does "WORK" 
+assume under the same formula? 
+(A) 61 (B) 58 (C) 64 (D) 67 
+19. Isolate the mathematical concept that fundamentally does not fit into the group: Gradient, 
+Curl, Divergence, Determinant 
+(A) Determinant (B) Gradient (C) Curl (D) Divergence 
+20. Complete the index vector configurations: 3B, 9E, 27H, 81K, ? 
+(A) 243N (B) 243M (C) 162N (D) 243O 
+21. Find the correct water image of the execution string: COMPILER_99 
+(A) CO𐌐bIГE𐌓_66 (B) ƆOW𐌐IГE𐌓_66 (C) CO𐌐bIГE𐌓_99 (D) CO𐌐bIГEЯ_66 
+22. Find the correct mirror image of the circuit component notation: R_load_100 
+(A) 001_daol_R (B) 001_bɒol_𐌓 (C) 001_bɒol_Я (D) 001_daol_Я 
+23. Find the correct mirror image of the token sequence: TOKEN_#9 
+(A) 9#_NEKOT (B) #_ИƎ𐌐O𐌕 (C) e#_ИƎ𐌞O𐌕 (D) e#_NEKOT 
+24. Complete the index value track: D4, H8, L12, P16, ? 
+(A) T20 (B) S19 (C) U21 (D) R18 
+25. Complete the pointer series: Z99, W88, T77, Q66, ? 
+(A) N55 (B) O55 (C) M55 (D) P55 
+26. A high-precision digital clock loses 3 minutes every 8 hours. If it is synchronized correctly at 
+6:00 AM on Monday, what actual time will it be when this clock shows 6:00 PM on the 
+following Wednesday? 
+(A) 6:18 PM (B) 6:21 PM (C) 5:42 PM (D) 6:15 PM 
+27. How many minutes past 2 o'clock must elapse for the minute hand to overtake and perfectly 
+coincide over the hour hand? 
+(A) 10-10/11 min (B) 11 min (C) 10-9/11 min (D) 12-2/11 min 
+28. Complete the fractional diff sequence: 2, 5, 11, 23, 47, ? 
+(A) 95 (B) 93 (C) 97 (D) 99 
+29. A true clock in a control room shows 03:45. What time is captured in its horizontal surface 
+liquid water image? 
+(A) 02:45 (B) 02:15 (C) 03:15 (D) 01:45 
+ 

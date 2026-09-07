@@ -2,20 +2,29 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { QuizRound, Question } = require('../models');
+const createAllRounds = require('./createAllRounds');
 
 const seedAllQuizRounds = async (force = false) => {
   try {
-    const roundCount = await QuizRound.count();
-    console.log(`[Master Seeder] Current QuizRound count in database: ${roundCount}`);
+    // 1. Ensure all 40 QuizRounds are defined in database
+    await createAllRounds();
 
-    if (roundCount >= 5 && !force) {
-      console.log(`[Master Seeder] Quiz rounds already present in DB (${roundCount} rounds). Skipping auto-seeding.`);
-      return { success: true, seeded: false, roundsCount: roundCount, message: `Database already contains ${roundCount} rounds.` };
+    const roundCount = await QuizRound.count();
+    const questionCount = await Question.count();
+    console.log(`[Master Seeder] QuizRounds count: ${roundCount}, Questions count: ${questionCount}`);
+
+    if (questionCount >= 50 && !force) {
+      console.log(`[Master Seeder] Quiz questions already present in DB (${questionCount} questions). Skipping auto-seeding.`);
+      return { success: true, seeded: false, roundsCount: roundCount, questionsCount: questionCount, message: `Database contains ${roundCount} rounds and ${questionCount} questions.` };
     }
 
-    console.log(`[Master Seeder] Starting full question sets and rounds population from datasets...`);
+    console.log(`[Master Seeder] Starting full question sets population from scratch datasets...`);
 
-    const scratchDir = path.join(__dirname, '../../../scratch');
+    let scratchDir = path.join(__dirname, '../../scratch');
+    if (!fs.existsSync(scratchDir)) {
+      scratchDir = path.join(__dirname, '../../../scratch');
+    }
+
     if (!fs.existsSync(scratchDir)) {
       console.warn(`[Master Seeder Warning] Scratch directory not found at ${scratchDir}`);
       return { success: false, message: 'Scratch directory missing' };
@@ -72,7 +81,7 @@ const seedAllQuizRounds = async (force = false) => {
       }
 
       const result = spawnSync(process.execPath, [scriptPath], {
-        cwd: path.join(__dirname, '../../..'),
+        cwd: path.join(__dirname, '../..'),
         env: { ...process.env },
         encoding: 'utf-8',
         timeout: 30000
@@ -94,7 +103,7 @@ const seedAllQuizRounds = async (force = false) => {
       seeded: true,
       roundsCount: finalRounds,
       questionsCount: finalQuestions,
-      message: `Successfully seeded ${finalRounds} rounds and ${finalQuestions} questions.`
+      message: `Successfully populated ${finalRounds} rounds and ${finalQuestions} questions.`
     };
   } catch (err) {
     console.error('[Master Seeder Error]:', err.message);

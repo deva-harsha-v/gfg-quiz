@@ -1,0 +1,70 @@
+Set 2(Btech 1st year) 
+1. Find the correct mirror image of the database syntax string: SELECT_all 
+(A) lla_TCALES (B) llɒ_ꓕƆƎ⅃Ǝꓔ (C) llɒ_𐌕ƆƎ⅃Ǝ𐌕 (D) llɒ_ꓔƆE⅃Eꓔ 
+2. Complete the structural engineering pattern link: Truss : Bridge :: Chassis : ? 
+(A) Automobile (B) Building (C) Airplane (D) Train 
+3. Complete the sequence based on prime-cube differences: \(2^3-2, 3^3-3, 5^3-5, 7^3-7, ?\) 
+(A) 990 (B) 1320 (C) 1720 (D) 2190 
+4. Find the correct water image of the statistical equation string: Sigma_X^2 
+(A) Ƨiƃɯɐ_X^2 (B) Ƨigɯɐ_X^5 (C) Ƨiƃɯɐ_X^5 (D) Siƃɯɐ_X^2 
+5. If a laboratory clock displays exactly 10:10, what is the measure of the smaller acute internal 
+angle between both hand lines? 
+(A) 115° (B) 110° (C) 120° (D) 105° 
+6. Complete the multi-variable progressional group: A1Z, E4X, I9V, M16T, ? 
+(A) Q25R (B) P25R (C) Q25S (D) R25Q 
+7. Find the correct water image of the network string: IP_v6_Host 
+(A) I𐌐_ʌ6_Hoѕʇ (B) Ib_ʌ6_Hosʇ (C) Ib_ʌ9_Hosʇ (D) I𐌐_v6_Hosʇ 
+8. Complete the conceptual logic layout: Viscosity : Fluids :: Friction : ? 
+(A) Solids (B) Gases (C) Plasma (D) Vacuum 
+9. Find the correct mirror image of the mixed hexadecimal string: 0x7F4A_e 
+(A) e_A4F7x0 (B) ɘ_A4𐌞7x0 (C) ɘ_A𐌲𐌞7x0 (D) ɘ_𐌡4𐌞7x0 
+10. Complete the logical numeric puzzle sequence: 6, 13, 28, 59, 122, ? 
+(A) 249 (B) 247 (C) 251 (D) 255 
+11. Complete the composite alternating group pairs: B-4, D-16, F-36, H-64, ? 
+(A) J-100 (B) I-81 (C) K-121 (D) J-121 
+12. Find the correct water image of the directory path string: C:\User\Bin 
+(A) Ɔ:\Usǝɹ\Biи (B) C:\Usǝɹ\Biи (C) C:\Пsǝɹ\Biи (D) C:\Usǝɹ\Biu 
+13. A high-precision digital clock loses 3 minutes every 8 hours. If it is synchronized correctly at 
+6:00 AM on Monday, what actual time will it be when this clock shows 6:00 PM on the 
+following Wednesday? 
+(A) 6:18 PM (B) 6:21 PM (C) 5:42 PM (D) 6:15 PM 
+14. Complete the alphanumeric index progression: A26, C24, E22, G20, ? 
+(A) I18 (B) H18 (C) J18 (D) I19 
+15. Find the correct mirror image of the server deployment tag: PROD_v1.0.4 
+(A) 4.0.1v_DORP (B) A.0.1v_𐌐OЯᗡ (C) 4.0.1v_𐌐ЯOᗡ (D) A.0.1v_𐌐ЯOᗡ 
+16. Complete the geometric factor sequence: 3, 4, 12, 45, 196, ? 
+(A) 1005 (B) 985 (C) 1025 (D) 1050 
+17. If the term "FORCE" resolves to 47 under prime indexing sum laws, what value does "WORK" 
+assume under the same formula? 
+(A) 61 (B) 58 (C) 64 (D) 67 
+18. Find the correct water image of the physical unit indicator: Newton_m 
+(A) Nǝʍʇou_ɯ (B) Иǝʍʇou_ɯ (C) Nǝʍʇou_m (D) Nǝwʇou_ɯ 
+19. At what precise minute interval past 9 o'clock do the hands of a clock lie flat along a single 
+straight line pointing in opposite directions? 
+(A) 16-4/11 min (B) 15 min (C) 16-5/11 min (D) 17-3/11 min 
+20. Complete the mathematical series sequence: 2, 12, 36, 80, 150, ? 
+(A) 252 (B) 248 (C) 260 (D) 274 
+21. Complete the pointer series: Z99, W88, T77, Q66, ? 
+(A) N55 (B) O55 (C) M55 (D) P55 
+22. Find the correct mirror image of the cloud terminal string: AWS_2026_S3 
+(A) 3S_6202_SWA (B) EƧ_∂S0S_ƧW∀ (C) ƐƧ_∂S0S_ƧW∀ (D) ƐƧ_6202_ƧW∀ 
+23. Complete the recursive sequence: 1, 5, 14, 30, 55, 91, ? 
+(A) 140 (B) 135 (C) 144 (D) 150 
+24. Find the correct water image of the circuit component notation: R_load_100 
+(A) B_loɒb_100 (B) 𐌓_loɒb_100 (C) R_loɒb_100 (D) 𐌓_loud_100 
+25. How many minutes past 2 o'clock must elapse for the minute hand to overtake and perfectly 
+coincide over the hour hand? 
+(A) 10-10/11 min (B) 11 min (C) 10-9/11 min (D) 12-2/11 min 
+26. Complete the index vector configurations: 3B, 9E, 27H, 81K, ? 
+(A) 243N (B) 243M (C) 162N (D) 243O 
+27. Find the correct mirror image of the token sequence: TOKEN_#9 
+(A) 9#_NEKOT (B) #_ИƎ𐌐O𐌕 (C) e#_ИƎ𐌞O𐌕 (D) e#_NEKOT 
+28. Isolate the mathematical concept that fundamentally does not fit into the group: Gradient, 
+Curl, Divergence, Determinant 
+(A) Determinant (B) Gradient (C) Curl (D) Divergence 
+29. Complete the fractional diff sequence: 2, 5, 11, 23, 47, ? 
+(A) 95 (B) 93 (C) 97 (D) 99 
+30. A true clock in a control room shows 03:45. What time is captured in its horizontal surface 
+liquid water image? 
+(A) 02:45 (B) 02:15 (C) 03:15 (D) 01:45 
+ 
