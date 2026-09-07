@@ -6,7 +6,8 @@ import {
   pauseRound,
   resumeRound,
   completeRound,
-  deleteRound
+  deleteRound,
+  seedDefaultDatasets
 } from '../../services/api';
 import {
   Trophy,
@@ -37,10 +38,28 @@ import {
 const RoundsPage = () => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [seedingLoading, setSeedingLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+
+  const handleImportDatasets = async () => {
+    try {
+      setSeedingLoading(true);
+      setError(null);
+      setSuccessMsg(null);
+      const res = await seedDefaultDatasets();
+      if (res?.success) {
+        setSuccessMsg(res.message || 'Datasets imported successfully.');
+        await loadRounds();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to import datasets.');
+    } finally {
+      setSeedingLoading(false);
+    }
+  };
 
   const handleCopyCode = (code, id) => {
     if (!code) return;
@@ -421,6 +440,16 @@ const RoundsPage = () => {
               title="Refresh Sets"
             >
               <RefreshCw className={`w-4 h-4 text-purple-400 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+
+            <button
+              onClick={handleImportDatasets}
+              disabled={seedingLoading || loading}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-purple-500/40 hover:bg-slate-800 text-purple-300 text-sm font-bold shadow-lg transition-all disabled:opacity-50"
+              title="Import Datasets from Scratch"
+            >
+              {seedingLoading ? <Loader2 className="w-4 h-4 animate-spin text-purple-400" /> : <Sparkles className="w-4 h-4 text-purple-400" />}
+              <span>Import Datasets</span>
             </button>
 
             <Link

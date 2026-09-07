@@ -12,6 +12,7 @@ const { sequelize, testDatabaseConnection } = require('./config/database');
 require('./models');
 
 const seedAdmin = require('./seeders/createAdmin');
+const seedAllQuizRounds = require('./seeders/seedAllQuizRounds');
 const { initializeSockets } = require('./sockets');
 const healthRoutes = require('./routes/health');
 const authRoutes = require('./routes/auth');
@@ -119,6 +120,8 @@ server.listen(PORT, async () => {
 
     // Run Admin Seeder
     await seedAdmin();
+    // Run Master Quiz Rounds Seeder (Populates all question sets from scratch datasets)
+    await seedAllQuizRounds();
   } catch (err) {
     console.error(`⚠️ Database startup warning: Database sync/seeding issue.`, err.message);
   }

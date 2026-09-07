@@ -3,13 +3,22 @@ const QuizRound = require('../models/QuizRound');
 const Participant = require('../models/Participant');
 const { sequelize } = require('../config/database');
 const { emitRoundEvent } = require('../sockets');
+const seedAllQuizRounds = require('../seeders/seedAllQuizRounds');
 
 // GET /api/rounds — Get all rounds & summary stats
 const getRounds = async (req, res, next) => {
   try {
-    const rounds = await QuizRound.findAll({
+    let rounds = await QuizRound.findAll({
       order: [['course', 'ASC'], ['setNumber', 'ASC'], ['roundNumber', 'ASC']]
     });
+
+    if (rounds.length === 0) {
+      console.log('[getRounds] No rounds found in database. Auto-importing default dataset from scratch...');
+      await seedAllQuizRounds(true);
+      rounds = await QuizRound.findAll({
+        order: [['course', 'ASC'], ['setNumber', 'ASC'], ['roundNumber', 'ASC']]
+      });
+    }
 
     const totalParticipants = await Participant.count({ where: { role: 'PARTICIPANT' } });
     const totalRounds = rounds.length;
@@ -33,6 +42,20 @@ const getRounds = async (req, res, next) => {
         creativeRiddlesCount
       },
       rounds
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/rounds/seed-default — Manually trigger dataset import
+const seedDefaultDatasets = async (req, res, next) => {
+  try {
+    const result = await seedAllQuizRounds(true);
+    return res.status(200).json({
+      success: true,
+      message: result.message || 'Default datasets imported successfully',
+      result
     });
   } catch (error) {
     next(error);
@@ -507,5 +530,6 @@ module.exports = {
   pauseRound,
   resumeRound,
   completeRound,
-  getRoundResults
+  getRoundResults,
+  seedDefaultDatasets
 };

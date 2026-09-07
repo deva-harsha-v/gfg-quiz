@@ -10,7 +10,8 @@ const {
   pauseRound,
   resumeRound,
   completeRound,
-  getRoundResults
+  getRoundResults,
+  seedDefaultDatasets
 } = require('../controllers/quizRoundController');
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleware');
 
@@ -19,6 +20,7 @@ router.use(authenticate);
 router.use(authorizeRoles('ADMIN'));
 
 router.get('/', getRounds);
+router.post('/seed-default', seedDefaultDatasets);
 router.get('/:id', getRoundById);
 router.get('/:id/results', getRoundResults);
 router.post('/', createRound);

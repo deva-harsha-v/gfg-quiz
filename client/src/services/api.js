@@ -71,6 +71,11 @@ export const fetchRounds = async () => {
   return response.data;
 };
 
+export const seedDefaultDatasets = async () => {
+  const response = await apiClient.post('/rounds/seed-default');
+  return response.data;
+};
+
 export const fetchRoundById = async (id) => {
   const response = await apiClient.get(`/rounds/${id}`);
   return response.data;
