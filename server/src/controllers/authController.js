@@ -263,7 +263,7 @@ const loginAdmin = async (req, res, next) => {
     });
   } catch (error) {
     console.error('[Admin Login Error]:', error);
-    const sqlDetail = error?.parent?.sqlMessage || error?.original?.sqlMessage || error?.message || 'Database connection issue.';
+    const sqlDetail = error?.parent?.sqlMessage || error?.original?.sqlMessage || error?.original?.message || error?.message || String(error);
     return res.status(500).json({
       success: false,
       message: `Admin auth failed: ${sqlDetail}`
