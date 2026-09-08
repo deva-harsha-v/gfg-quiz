@@ -1588,6 +1588,9 @@ const publicStartExam = async (req, res, next) => {
     }
 
     next(error);
+  }
+};
+
 /**
  * DELETE /api/quiz/admin/attempts/:id
  * Deletes a quiz attempt record by ID.
