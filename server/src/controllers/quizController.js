@@ -1087,6 +1087,9 @@ const getAdminResults = async (req, res, next) => {
       const setDisplay = att.round ? (att.round.setNumber ? `SET ${att.round.setNumber}` : att.round.title) : '—';
       const setNameFull = att.round ? `${att.round.category} - ${att.round.course} ${att.round.year} ${setDisplay}` : '—';
 
+      const totalQ = (att.correctCount || 0) + (att.incorrectCount || 0) + (att.unansweredCount || 0) || 30;
+      const speedSecPerQ = totalQ > 0 ? Math.round((timeNum / totalQ) * 10) / 10 : 0;
+
       return {
         rank: currentRank,
         id: att.id,
@@ -1119,6 +1122,8 @@ const getAdminResults = async (req, res, next) => {
         timeTakenSeconds: timeNum,
         timeTakenMinutes: Math.round((timeNum / 60) * 10) / 10,
         timeTakenFormatted,
+        speedSecPerQ,
+        speedPace: `${speedSecPerQ}s / Q`,
         status: att.status
       };
     });
@@ -1583,6 +1588,41 @@ const publicStartExam = async (req, res, next) => {
     }
 
     next(error);
+/**
+ * DELETE /api/quiz/admin/attempts/:id
+ * Deletes a quiz attempt record by ID.
+ * Protected: ADMIN only.
+ */
+const deleteQuizAttemptAdmin = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const attempt = await QuizAttempt.findByPk(id);
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: 'Quiz attempt not found.'
+      });
+    }
+
+    // Try deleting associated QuestionResponse records if model exists
+    try {
+      const QuestionResponse = require('../models/QuestionResponse');
+      if (QuestionResponse) {
+        await QuestionResponse.destroy({ where: { attemptId: id } });
+      }
+    } catch (e) {
+      console.warn('[Delete Attempt Warning]: QuestionResponse cleanup skipped:', e.message);
+    }
+
+    await attempt.destroy();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Quiz attempt deleted successfully.'
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -1597,5 +1637,6 @@ module.exports = {
   verifyAccessCode,
   publicStartExam,
   getRankings,
-  getAdminResults
+  getAdminResults,
+  deleteQuizAttemptAdmin
 };

@@ -242,4 +242,9 @@ export const fetchAdminResults = async (params = {}) => {
   return response.data;
 };
 
+export const deleteQuizAttemptAdmin = async (attemptId) => {
+  const response = await apiClient.delete(`/quiz/admin/attempts/${attemptId}`);
+  return response.data;
+};
+
 export default apiClient;

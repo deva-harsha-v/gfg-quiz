@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchAdminResults } from '../../services/api';
+import { fetchAdminResults, deleteQuizAttemptAdmin } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 import {
@@ -25,7 +25,9 @@ import {
   BarChart3,
   Calendar,
   Layers,
-  Sparkles
+  Sparkles,
+  Trash2,
+  Zap
 } from 'lucide-react';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
@@ -37,10 +39,13 @@ const AdminResultsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [attemptToDelete, setAttemptToDelete] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [socketConnected, setSocketConnected] = useState(false);
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('ALL');
   const [filterYear, setFilterYear] = useState('ALL');
   const [filterDept, setFilterDept] = useState('ALL');
   const [filterSec, setFilterSec] = useState('ALL');
@@ -54,6 +59,7 @@ const AdminResultsPage = () => {
       setError(null);
       const res = await fetchAdminResults({
         search: searchTerm,
+        category: filterCategory,
         year: filterYear,
         department: filterDept,
         section: filterSec,
@@ -74,7 +80,29 @@ const AdminResultsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, filterYear, filterDept, filterSec, filterSet, filterStatus, sortBy]);
+  }, [searchTerm, filterCategory, filterYear, filterDept, filterSec, filterSet, filterStatus, sortBy]);
+
+  const handleDeleteAttempt = async (attemptId) => {
+    try {
+      setDeletingId(attemptId);
+      const res = await deleteQuizAttemptAdmin(attemptId);
+      if (res?.success) {
+        setResults((prev) => prev.filter((r) => r.id !== attemptId && r.attemptId !== attemptId));
+        setAttemptToDelete(null);
+        if (selectedStudent?.id === attemptId) {
+          setSelectedStudent(null);
+        }
+        loadResults();
+      } else {
+        alert(res?.message || 'Failed to delete attempt.');
+      }
+    } catch (err) {
+      console.error('[Delete Attempt Error]:', err);
+      alert(err.response?.data?.message || 'Error deleting attempt.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   useEffect(() => {
     loadResults();
@@ -340,9 +368,30 @@ const AdminResultsPage = () => {
 
         {/* Filters & Search Toolbar */}
         <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-            <Filter className="w-4 h-4 text-purple-400" />
-            <span>Search & Filter Results</span>
+          {/* 1. Event / Category Tabs (Separated Events) */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4">
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mr-2 flex items-center space-x-1">
+              <Layers className="w-4 h-4 text-purple-400" />
+              <span>Event Category:</span>
+            </span>
+            <button
+              onClick={() => setFilterCategory('ALL')}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${filterCategory === 'ALL' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'}`}
+            >
+              All Events Combined
+            </button>
+            <button
+              onClick={() => setFilterCategory('Logical Reasoning')}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${filterCategory === 'Logical Reasoning' ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/25' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'}`}
+            >
+              🧠 Logical Reasoning Event
+            </button>
+            <button
+              onClick={() => setFilterCategory('Creative Riddles')}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${filterCategory === 'Creative Riddles' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'}`}
+            >
+              💡 Creative Riddles Event
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -407,14 +456,14 @@ const AdminResultsPage = () => {
               </select>
             </div>
 
-            {/* Sort By */}
+            {/* Sort By (Accuracy + Speed Ranking) */}
             <div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-purple-500 text-xs text-purple-300 font-bold focus:outline-none transition-all"
               >
-                <option value="highest_marks">Highest Marks First</option>
+                <option value="highest_marks">Score & Speed (Ranked)</option>
                 <option value="fastest_time">Fastest Time First</option>
                 <option value="lowest_marks">Lowest Marks First</option>
                 <option value="latest_submission">Latest Submission</option>
@@ -429,7 +478,9 @@ const AdminResultsPage = () => {
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="flex items-center space-x-2">
               <Trophy className="w-5 h-5 text-amber-400" />
-              <h3 className="text-base font-bold text-slate-100">Submitted Results List</h3>
+              <h3 className="text-base font-bold text-slate-100">
+                {filterCategory === 'ALL' ? 'All Events Leaderboard' : `${filterCategory} Leaderboard`}
+              </h3>
             </div>
             <span className="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
               Showing {results.length} Submitted Results
@@ -464,6 +515,7 @@ const AdminResultsPage = () => {
                     <th className="p-3.5 text-center">Marks</th>
                     <th className="p-3.5 text-center">Percentage</th>
                     <th className="p-3.5 text-center">Time Taken</th>
+                    <th className="p-3.5 text-center">Speed Pace</th>
                     <th className="p-3.5">Submitted At</th>
                     <th className="p-3.5 text-center">Status</th>
                     <th className="p-3.5 text-center">Action</th>
@@ -506,6 +558,12 @@ const AdminResultsPage = () => {
                       <td className="p-3.5 text-center text-indigo-300 font-semibold">
                         {item.timeTakenFormatted}
                       </td>
+                      <td className="p-3.5 text-center text-cyan-300 font-semibold" title="Average speed per question">
+                        <div className="inline-flex items-center space-x-1">
+                          <Zap className="w-3 h-3 text-cyan-400" />
+                          <span>{item.speedPace || `${item.speedSecPerQ || 0}s/Q`}</span>
+                        </div>
+                      </td>
                       <td className="p-3.5 text-slate-400 font-sans text-[11px]">
                         {item.submittedAt ? new Date(item.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
                       </td>
@@ -515,16 +573,29 @@ const AdminResultsPage = () => {
                         </span>
                       </td>
                       <td className="p-3.5 text-center font-sans">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedStudent(item);
-                          }}
-                          className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-purple-500 text-slate-400 hover:text-purple-300 transition-all"
-                          title="View Full Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedStudent(item);
+                            }}
+                            className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-purple-500 text-slate-400 hover:text-purple-300 transition-all"
+                            title="View Full Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAttemptToDelete(item);
+                            }}
+                            className="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 transition-all"
+                            title="Delete Attempt"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -574,7 +645,7 @@ const AdminResultsPage = () => {
               <div className="p-4 bg-slate-900/60 rounded-2xl border border-slate-800 space-y-2">
                 <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider block mb-2">Exam Information</span>
                 <div className="text-xs space-y-1.5 text-slate-300">
-                  <div className="flex justify-between"><span className="text-slate-500">Category:</span> <span>{selectedStudent.category}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Category:</span> <span className="font-bold text-purple-300">{selectedStudent.category}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Set:</span> <span className="font-bold">{selectedStudent.setNumber}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Exam Code:</span> <span className="font-mono text-purple-300">{selectedStudent.examCode}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Total Marks:</span> <span>{selectedStudent.totalMarks}</span></div>
@@ -594,16 +665,18 @@ const AdminResultsPage = () => {
                 <span className="text-lg font-extrabold text-emerald-400">{selectedStudent.percentage}%</span>
               </div>
               <div className="p-3 bg-slate-900 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Correct</span>
-                <span className="text-lg font-extrabold text-emerald-400">{selectedStudent.correctAnswers}</span>
+                <span className="text-[10px] text-slate-500 uppercase block">Speed Pace</span>
+                <span className="text-sm font-extrabold text-cyan-300 block mt-1">{selectedStudent.speedPace || `${selectedStudent.speedSecPerQ || 0}s/Q`}</span>
               </div>
               <div className="p-3 bg-slate-900 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Wrong</span>
-                <span className="text-lg font-extrabold text-rose-400">{selectedStudent.wrongAnswers}</span>
+                <span className="text-[10px] text-slate-500 uppercase block">Correct / Wrong</span>
+                <span className="text-sm font-extrabold text-slate-200 block mt-1">
+                  <span className="text-emerald-400">{selectedStudent.correctAnswers}</span> / <span className="text-rose-400">{selectedStudent.wrongAnswers}</span>
+                </span>
               </div>
             </div>
 
-            {/* Timing Breakdown */}
+            {/* Timing Breakdown & Delete Action */}
             <div className="p-4 bg-slate-900/40 rounded-2xl border border-slate-800 flex items-center justify-between text-xs text-slate-400">
               <div>
                 <span className="text-slate-500 block text-[10px]">Started At</span>
@@ -617,6 +690,65 @@ const AdminResultsPage = () => {
                 <span className="text-slate-500 block text-[10px]">Submitted At</span>
                 <span>{selectedStudent.submittedAt ? new Date(selectedStudent.submittedAt).toLocaleString() : '—'}</span>
               </div>
+            </div>
+
+            {/* Modal Delete Action Button */}
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => {
+                  setAttemptToDelete(selectedStudent);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-all flex items-center space-x-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Attempt</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {attemptToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="glass-card max-w-md w-full rounded-3xl border border-rose-500/30 p-6 space-y-5 relative shadow-2xl">
+            <div className="flex items-center space-x-3 text-rose-400">
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-100">Delete Exam Attempt?</h3>
+                <span className="text-xs text-rose-400 font-medium">Irreversible Action</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
+              Are you sure you want to delete the exam attempt for <strong className="text-slate-100">{attemptToDelete.studentName}</strong> (<strong className="text-cyan-400">{attemptToDelete.rollNumber}</strong>)?
+              This will remove their submission and allow them to re-enter if required.
+            </p>
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                onClick={() => setAttemptToDelete(null)}
+                disabled={deletingId !== null}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteAttempt(attemptToDelete.id || attemptToDelete.attemptId)}
+                disabled={deletingId !== null}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-500/20 transition-all flex items-center space-x-2 disabled:opacity-50"
+              >
+                {deletingId !== null ? (
+                  <span>Deleting...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete Attempt</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -12,7 +12,8 @@ const {
   verifyAccessCode,
   publicStartExam,
   getRankings,
-  getAdminResults
+  getAdminResults,
+  deleteQuizAttemptAdmin
 } = require('../controllers/quizController');
 const { terminateAttemptController } = require('../controllers/securityController');
 
@@ -23,6 +24,7 @@ router.get('/rankings', getRankings);
 
 // 2. PROTECTED ADMIN ROUTES
 router.get('/admin/results', authenticate, authorizeRoles('ADMIN'), getAdminResults);
+router.delete('/admin/attempts/:id', authenticate, authorizeRoles('ADMIN'), deleteQuizAttemptAdmin);
 
 // 3. PROTECTED PARTICIPANT ROUTES (Require authentication token)
 router.use(authenticate, authorizeRoles('PARTICIPANT'));
